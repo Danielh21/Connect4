@@ -9,8 +9,11 @@ public class Connect4AIImp : MonoBehaviour, connect4AI
 
     public int Place(int[,] board)
     {
+        if (board[3, 3] == 0) return 3;
         System.Random r = new System.Random();
-        return r.Next(7);
+        int rtn = r.Next(7);
+        while (board[rtn, board.GetLength(1)-1]!=0) rtn = r.Next(7);
+        return rtn;
     }
 
     public void SetTeam(int teamNumber)

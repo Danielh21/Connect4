@@ -27,7 +27,7 @@ public class SpawnPositions : MonoBehaviour {
         this.playerThatControllsField = Player.None;
     }
 
-    
+
 
     public int getZ()
     {
