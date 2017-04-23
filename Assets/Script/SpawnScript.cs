@@ -7,26 +7,34 @@ using System.Linq;
 public class SpawnScript : MonoBehaviour {
 
     public Transform prefab;
-    public SpawnPositions[,] Sphere2dArray = new SpawnPositions[7, 6];
+    public SpawnPositions[,] Sphere2dArray;
     public static bool GameWon = false;
+    private int width;
+    private bool spawned=false;
 
     // Use this for initialization
     void Start () {
         EventCanvasManager.OnClicked += InstantiateSpehre;
-        CreateSpawnAblePositions();
+        //CreateSpawnAblePositions(int x);
         
 	}
 
-    private void CreateSpawnAblePositions()
+    public bool isSpawned()
+    {
+        return spawned;
+    }
+
+    public void CreateSpawnAblePositions(int w)
     {
         /*The x Value goes should go from 0 - 6 and the
         *The z goes from 0 -5 The values are created in another Script!
         *
         **/
+        width = w;
         float basex = -60;
         float basez = 5;
-
-        for (int x = 0; x < 7; x++)
+        Sphere2dArray = new SpawnPositions[w, 6];
+        for (int x = 0; x < w; x++)
         {
             for (int z = 0;z < 6; z++)
             {
@@ -35,15 +43,16 @@ public class SpawnScript : MonoBehaviour {
                 Sphere2dArray[x, z] = spawnPosition;
             }
         }
+        spawned = true;
 
     }
 
     internal int[,] GetBoardAsArray()
     {
         // Returns the Sphere2dArray with 0 as Player.None, 1 as  Player.P1, and 2 as Player.P2
-        int[,] array = new int[7, 6];
+        int[,] array = new int[width, 6];
 
-        for (int x = 0; x < 7; x++)
+        for (int x = 0; x < width; x++)
         {
             for (int z = 0; z < 6; z++)
             {
@@ -94,6 +103,7 @@ public class SpawnScript : MonoBehaviour {
 
        if(HasPlayerWon(row, collum, p))
         {
+            
             Debug.Log("Player: " + playerNumber + " Has Won!");
             SpawnScript.GameWon = true;
         }

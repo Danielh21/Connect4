@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class AIv2 : MonoBehaviour, connect4AI
 
-public class AI : MonoBehaviour, connect4AI
 {
     private BoardEval be;
     private int playerNumber;
-    private int depth = 20;
+    private int depth = 6;
     private System.Random r = new System.Random();
     // Use this for initialization
 
@@ -32,34 +31,34 @@ public class AI : MonoBehaviour, connect4AI
 
     public int getMove(int[,] board)
     {
-        print("Our player number: " + playerNumber);
-        int move = be.winningMoveExists(board);
-        if (move != -1)
-        {
-            print("Blocking/winning a sure thing this play");
-            //return move;
-        }
-        move = be.openended(board);
-        if (move != -1)
-        {
-            return move;
-        }
 
+
+        
         int moves = be.moveCount(board);
-        //if (moves > 10) depth = 8;
-        //if (moves > 20) depth = 12;
-        //if (moves > 25) depth = 15;
+        if (board.GetLength(0) == 6)
+        {
+            if (moves > 8) depth = 7;
+            if (moves > 11) depth = 8;
+            if (moves > 17) depth = 9;
+            if (moves > 20) depth = 11;
+            if (moves > 25) depth = 13;
+        }
+        if (board.GetLength(0) == 7)
+        {
+            if (moves > 10) depth = 7;
+            if (moves > 16) depth = 8;
+            if (moves > 21) depth = 9;
+            if (moves > 22) depth = 12;
+        }
         if (moves < 5) return reducedMove(board);
-        print("Doing alpha beta pruning");
-        print("Movecount: " + moves);
-        //int value = -101;
-        //int[] options = new int[board.GetLength(0)];
+
+
 
         int[,] copy = be.copyOfBoard(board);
         int[] temp = ab(copy, 6, -250, 250, true, 0);
 
 
-        print("Alpha beta returns" + temp[0] + " with a value of: " + temp[1]);
+        //print("Alpha beta returns" + temp[0] + " with a value of: " + temp[1]);
         if (temp[0] == 0 && temp[1] == 0)
         {
             int semiRand = r.Next(4) + 1;
@@ -67,19 +66,19 @@ public class AI : MonoBehaviour, connect4AI
             if (!be.moveIsIllegal(copy2, semiRand))
             {
                 be.putMove(copy2, playerNumber == 1, semiRand);
-                if (ab(copy2, 6, -250, 250, false, 0)[1] == 0)
+                if (ab(copy2, depth, -250, 250, false, 0)[1] == 0)
                 {
-                    print("Height of board"+board.GetLength(1));
-                    print(board[semiRand, board.GetLength(1) - 1]);
+                    //print("Height of board" + board.GetLength(1));
+                    //print(board[semiRand, board.GetLength(1) - 1]);
                     return semiRand;
                 }
             }
-            
+
         }
         return temp[0];
     }
 
-    
+
 
     public int[] ab(int[,] board, int depth, int alpha, int beta, bool max, int moves)
     {
@@ -87,10 +86,7 @@ public class AI : MonoBehaviour, connect4AI
         result[0] = -1;
 
         int boardStatus = be.checkGameOver(board);
-        if (depth == 10)
-        {
-            print("Boardstatus: " + boardStatus);
-        }
+       
         if (boardStatus == playerNumber)
         {
             // someone wins -> rtn 1 or -1 * turns
@@ -103,9 +99,9 @@ public class AI : MonoBehaviour, connect4AI
         }
         else if (boardStatus != 0)
         {
-            if(moves<2) be.printBoard(board);
-            result[1] = moves-22;
-            return result ;
+            if (moves < 2) be.printBoard(board);
+            result[1] = moves - 22;
+            return result;
         }
         if (be.exhaustedOptions(board)) return result;
         if (depth == 0)
@@ -115,11 +111,11 @@ public class AI : MonoBehaviour, connect4AI
             //be.printBoard(board);
             return result;
         } // wtd here?
-        
+
 
         if (max)
         {
-            
+
             int[] resultMax = new int[2];
             resultMax[0] = -1;
             resultMax[1] = -999;
@@ -133,8 +129,8 @@ public class AI : MonoBehaviour, connect4AI
                 if (depth == 9)
                 {
                     print("Max Evaluated: " + next[0] + " as " + next[1]);
-                    }
-                if (resultMax[0]==-1 || next[1] > resultMax[1])
+                }
+                if (resultMax[0] == -1 || next[1] > resultMax[1])
                 {
 
                     resultMax[0] = i;
@@ -150,7 +146,7 @@ public class AI : MonoBehaviour, connect4AI
 
         else
         {
-            
+
             int[] resultMin = new int[2];
             resultMin[0] = -1;
             resultMin[1] = 999;
@@ -192,11 +188,11 @@ public class AI : MonoBehaviour, connect4AI
         {
             int openended = be.openended(board);
             if (openended != -1) return openended;
-            //print("Returning one of two middle values");
-            //if (!be.moveIsIllegal(board, i / 2) && !be.moveIsIllegal(board, i / 2))
-            //    return i / 2 - (int)(r.Next(1));
-            //if (!be.moveIsIllegal(board, i / 2)) return i / 2;
-            //if (!be.moveIsIllegal(board, i / 2 - 1)) return i / 2 - 1;
+            print("Returning one of two middle values");
+            if (!be.moveIsIllegal(board, i / 2) && !be.moveIsIllegal(board, i / 2 - 1))
+                return i / 2 - (int)(r.Next(1));
+            if (!be.moveIsIllegal(board, i / 2)) return i / 2;
+            if (!be.moveIsIllegal(board, i / 2 - 1)) return i / 2 - 1;
 
         }
         else
@@ -204,7 +200,7 @@ public class AI : MonoBehaviour, connect4AI
             if (!be.moveIsIllegal(board, i / 2)) return i / 2;
         }
         print("returning a completely random move");
-        
+
         //return r.Next(7);
         int rand = (r.Next(board.GetLength(0)));
         while (be.moveIsIllegal(board, rand)) rand = (r.Next(board.GetLength(0)));
@@ -252,7 +248,7 @@ public class AI : MonoBehaviour, connect4AI
 
             // p2 boards
             // General:
-            
+
             b2 = new int[x, y];
 
 
@@ -272,7 +268,7 @@ public class AI : MonoBehaviour, connect4AI
 
 
 
-class BoardEval
+class BoardEval2
 {
 
     int x;
@@ -304,22 +300,22 @@ class BoardEval
     {
         // Check end to end first?
         if (y + 3 < this.y
-                && board[x,y] != 0
-                && board[x,y] == board[x,y + 1]
-                && board[x,y + 1] == board[x,y + 2]
-                && board[x,y + 2] == board[x,y + 3])
-            return board[x,y];
+                && board[x, y] != 0
+                && board[x, y] == board[x, y + 1]
+                && board[x, y + 1] == board[x, y + 2]
+                && board[x, y + 2] == board[x, y + 3])
+            return board[x, y];
         return 0;
     }
 
     private int checkSide(int[,] board, int x, int y)
     {
         if (x + 3 < this.x
-                && board[x,y] != 0
-                && board[x,y] == board[x + 1,y]
-                && board[x + 1,y] == board[x + 2,y]
-                && board[x + 2,y] == board[x + 3,y])
-            return board[x,y];
+                && board[x, y] != 0
+                && board[x, y] == board[x + 1, y]
+                && board[x + 1, y] == board[x + 2, y]
+                && board[x + 2, y] == board[x + 3, y])
+            return board[x, y];
         return 0;
     }
 
@@ -329,11 +325,11 @@ class BoardEval
         if (
                 x + 3 < this.x
                 && y + 3 < this.y
-                && board[x,y] != 0
-                && board[x,y] == board[x + 1,y + 1]
-                && board[x + 1,y + 1] == board[x + 2,y + 2]
-                && board[x + 2,y + 2] == board[x + 3,y + 3])
-            return board[x,y];
+                && board[x, y] != 0
+                && board[x, y] == board[x + 1, y + 1]
+                && board[x + 1, y + 1] == board[x + 2, y + 2]
+                && board[x + 2, y + 2] == board[x + 3, y + 3])
+            return board[x, y];
         return 0;
 
     }
@@ -343,11 +339,11 @@ class BoardEval
         if (
                 x + 3 < this.x
                 && y - 3 >= 0
-                && board[x,y] != 0
-                && board[x,y] == board[x + 1,y - 1]
-                && board[x + 1,y - 1] == board[x + 2,y - 2]
-                && board[x + 2,y - 2] == board[x + 3,y - 3])
-            return board[x,y];
+                && board[x, y] != 0
+                && board[x, y] == board[x + 1, y - 1]
+                && board[x + 1, y - 1] == board[x + 2, y - 2]
+                && board[x + 2, y - 2] == board[x + 3, y - 3])
+            return board[x, y];
         return 0;
     }
 
@@ -355,11 +351,11 @@ class BoardEval
     {
         for (int j = board.GetLength(1) - 1; j >= 0; j--)
         {
-            String s = "";
+            System.String s = "";
             for (int i = 0; i < board.GetLength(0); i++)
             {
-                s += board[i,j] + " ";
-                
+                s += board[i, j] + " ";
+
             }
             Debug.Log(s);
             //Debug.Log("");
@@ -370,7 +366,6 @@ class BoardEval
 
     public bool moveIsIllegal(int[,] board, int column)
     {
-        if (column < 0 || column >= board.GetLength(0)) return true;
         int top = board.GetLength(1) - 1;
         bool illegal = (board[column, top]) != 0;
         return illegal;
@@ -379,7 +374,7 @@ class BoardEval
     {
 
         int[,] copy = board.Clone() as int[,];
- 
+
 
         return copy;
     }
@@ -395,15 +390,15 @@ class BoardEval
     {
         for (int i = 0; i < board.GetLength(1); i++)
         {
-            if (board[col,i] == 0)
+            if (board[col, i] == 0)
             {
                 if (p1)
                 {
-                    board[col,i] = 1;
+                    board[col, i] = 1;
                 }
                 else
                 {
-                    board[col,i] = 2;
+                    board[col, i] = 2;
                 }
                 break;
             }
@@ -419,7 +414,7 @@ class BoardEval
         {
             for (int i = 0; i < board.GetLength(0); i++)
             {
-                if (board[i,j] != 0) count++;
+                if (board[i, j] != 0) count++;
             }
 
         }
@@ -436,8 +431,8 @@ class BoardEval
             for (int y = 0; y < this.y; y++)
             {
 
-                if (board[x,y] == 1) p1MovesCount++;
-                else if (board[x,y] == 2) p2MovesCount++;
+                if (board[x, y] == 1) p1MovesCount++;
+                else if (board[x, y] == 2) p2MovesCount++;
             }
         }
         return !(p1MovesCount > p2MovesCount);
@@ -464,7 +459,7 @@ class BoardEval
         for (int i = 1; i < board.GetLength(0) - 3; i++)
         {
 
-            if (board[i - 1,0] == 0 && board[i,0] == board[i + 1,0] && board[i, 0]!=0 && board[i + 2,0] == 0)
+            if (board[i - 1, 0] == 0 && board[i, 0] == board[i + 1, 0] && board[i, 0] != 0 && board[i + 2, 0] == 0)
             {
                 return i - 1;
             }
@@ -472,7 +467,7 @@ class BoardEval
         return -1;
     }
 
-    
 
-    
+
+
 }
